@@ -1,31 +1,213 @@
-# AtsExCsTemplate
-[AtsEX](https://github.com/automatic9045/AtsEX)を使ったBve5またはBve6用のプラグインのためのテンプレート
+# READMEのテンプレート
+## 使い方
+1. 既にある`README.md`を消す
+2. このテンプレートを`README.md`にリネームする
+3. 水平線より上(この使い方の部分)を消す
+4. `$REPONAME$`をリポジトリの名前に置換する
+5. Todoのところを書く
+6. 保存してコミット&プッシュ
+(---)
+# $REPONAME$
+[AtsEX](https://github.com/automatic9045/AtsEX)を使ったBve5またはBve6用のプラグイン
+**Todo: プラグインの概要を書く**
 
-## プラグイン開発が初めての人へ
-~全然クイックじゃない~[クイックスタート](../../wiki/クイックスタート/)から取り掛かるのがおすすめです
+
+## プラグインの機能
+- **Todo: 機能を列挙**
+
+
+## 導入方法
+**Todo: 導入方法を必要に応じて変更**
+### 1. AtsEXの導入
+[公式のダウンロードページ](https://automatic9045.github.io/AtsEX/download/)を参照してください
+### 2. 本プラグインの導入
+1. [Releases](releases/)から最新版がダウンロードできます
+2. **Todo: 配置場所をプラグインの種類に応じて下から選択して変更**
+```md
+# 拡張機能の場合
+2. AtsExの導入場所にある`Extensions`フォルダの中に本プラグインを配置します
+    - デフォルト: `C:\Users\Public\Documents\AtsEx\1.0\Extensions`
+    - プラグインはBveの起動と同時に読み込まれ、必要に応じて他のプラグインから利用されます
+
+# マッププラグインの場合
+2. シナリオフォルダの中に本プラグインを配置します  
+    ディレクトリ構成例: 
+    ```text
+    Scenarios
+    ├ MyScenario.txt
+    └ MyMaps
+      └ SampleMap
+        ├ MapPlugins
+        │ ├ 本プラグイン($REPONAME$.dll)
+        │ ├ OtherPlugin.dll
+        │ └ ...
+        ├ MapPluginUsing.xml
+        ├ Image.jpg
+        ├ Map.txt
+        ├ Signals.csv
+        ├ Sounds.csv
+        ├ Sounds3D.csv
+        ├ Stations.csv
+        └ Structures.csv
+    ```
+3. `MapPluginUsing.xml`を作成し本プラグインの情報を記入します  
+    MapPluginUsing.xml(例): 
+    ```xml
+    <?xml version="1.0" encoding="utf-8" ?>
+    <AtsExPluginUsing xmlns="http://automatic9045.github.io/ns/xmlschemas/AtsExPluginUsingXmlSchema.xsd">
+    	<Assembly Path="MapPlugins\$REPONAME$.dll" />
+    	<Assembly Path="MapPlugins\OtherPlugin.dll" />
+    </AtsExPluginUsing>
+    ```
+4. マップファイルから参照します  
+    Map.txt(例): 
+    ```text
+    BveTs Map 2.02:utf-8
+    
+    // AtsEX
+    include '<AtsEx::USEATSEX>';                            // AtsEXのプラグインを使うという宣言
+    include '<AtsEx::READDEPTH>1';                          // AtsEXのプラグインを探すディレクトリの深さ
+    include '<AtsEx::MapPluginUsing>MapPluginUsing.xml';    // 使うプラグインの情報を伝えるファイルの位置
+    
+    Structure.Load('Structures.txt');
+    Signal.Load('Signals.csv');
+    Sound.Load('Sounds_e.txt');
+    Sound3D.Load('Sounds3D.txt');
+    Station.Load('Stations.csv');
+    
+    0;
+    ...
+    ```
+
+# 車両プラグインの場合
+2. 車両アドオンの中に本プラグインを配置します  
+    ディレクトリ構成例: 
+    ```text
+    Scenarios
+    └ MyVehicles
+    　 └ SampleVehicle
+    　 　 ├ Vehicle.txt
+    　 　 ├ Ats
+    　 　 │ ├ AtsEx.Caller.txt
+    　 　 │ ├ AtsEx.Caller.x64.dll
+    　 　 │ ├ AtsEx.Caller.x86.dll
+    　 　 │ ├ AtsEXPlugins
+    　 　 │ │ ├ 本プラグイン($REPONAME$.dll)
+    　 　 │ │ └ OtherPlugin.dll
+    　 　 │ ├ DetailManager.x64.dll
+    　 　 │ ├ DetailManager.x86.dll
+    　 　 │ ├ detailmodules.txt
+    　 　 │ ├ OtherNormalPlugin.dll
+    　 　 │ └ ...
+    　 　 ├ Notch
+    　 　 │ ├ Notch.txt
+    　 　 │ └ ...
+    　 　 ├ Panel
+    　 　 │ ├ Panel.txt
+    　 　 │ └ ...
+    　 　 ├ Sound
+    　 　 │ ├ Sound.txt
+    　 　 │ ├ Motor.txt
+    　 　 │ └ ...
+    　 　 ├ Parameters.txt
+    　 　 └ ...
+    ```
+3. 設定ファイルを作成し本プラグインの情報を記入します  
+    - AtsEx.Caller.txt
+        ```text
+        ..\..\..\AtsEx
+        ```
+    - AtsEx.Caller.x86.VehiclePluginUsing.xml: x64と同じ
+    - AtsEx.Caller.x64.VehiclePluginUsing.xml(例): 
+        ```xml
+        <?xml version="1.0" encoding="utf-8" ?>
+        <AtsExPluginUsing xmlns="http://automatic9045.github.io/ns/xmlschemas/AtsExPluginUsingXmlSchema.xsd">
+        	<Assembly Path="AtsEXPlugins\$REPONAME$.dll" />
+        	<Assembly Path="AtsEXPlugins\OtherPlugin.dll" />
+        </AtsExPluginUsing>
+        ```
+    - AtsEx.Caller.x86.VehicleConfig.xml: x64と同じ
+    - AtsEx.Caller.x64.VehicleConfig.xml(例): 
+        ```xml
+        <?xml version="1.0" encoding="utf-8" ?>
+        <AtsExVehicleConfig xmlns="http://automatic9045.github.io/ns/xmlschemas/AtsExVehicleConfigXmlSchema.xsd">
+            <DetectSoundIndexConflict>true</DetectSoundIndexConflict>
+            <DetectPanelValueIndexConflict>true</DetectPanelValueIndexConflict>
+        </AtsExVehicleConfig>
+        ```
+4. ビークルファイルから参照します  
+    Vehicle.txt(例): 
+    ```text
+    BveTs Vehicle 2.00
+    PerformanceCurve = Notch\Notch.txt
+    Parameters = Parameters.txt
+    Panel = Panel\Panel.txt
+    Sound = Sound\Sound.txt
+    MotorNoise = Sound\Motor.txt
+    Ats32 = Ats\AtsEx.Caller.x86.dll
+    Ats64 = Ats\AtsEx.Caller.x64.dll
+    ```
+
+   非AtsEXなプラグインと両立する場合は次の通りです
+   1. Ats32とAts64でDetailManagerを指定する
+   2. detailmodules.txtでAtsEx.Callerを指定する
+```
+> [!WARNING]
+> この項目の内容はすべてが正しい保証がありません
+> 正確な情報を得るには以下を参照してください
+> - AtsEXの[公式リポジトリ](https://github.com/automatic9045/AtsEX/)
+> - AtsEXの[公式サイト](https://automatic9045.github.io/AtsEX/)
+
+
+## 使い方
+- **Todo: 必要に応じて書く**
+### パネル
+**Todo: 必要に応じて書く**
+| index  | 型   | 機能       | 備考              |
+| ------ | ---- | ---------- | ----------------- |
+| ats001 | uint | 速度絶対値 | 1km刻みで切り捨て |
+
 
 ## ライセンス
-[MIT](LICENSE)
+- **Todo: `LICENSE`の著作権表示を書き換える**
+- **Todo: ライセンスを変更する場合には`LICENSE`を書き換えた後にここも変更する**
+- [MIT](LICENSE)
+    - できること
+        - 商用利用
+        - 修正
+        - 配布
+        - 私的使用
+    - ダメなこと
+        - 著作者は一切責任を負わない
+        - 本プラグインは無保証で提供される
 
-## このテンプレートの機能
-- 取っ掛かりやすいように3種類のプラグインのファイル
-    - マッププラグイン
-    - 車両プラグイン
-    - 拡張機能
-- Actionsでのdll自動生成
-- 頑張って書いた[wiki](../../wiki/)
 
 ## 動作環境
+**Todo: 動作環境を必要に応じて変更**
+- Windows
+    - Win10 22H2
+    - Win11 23H2 or later
+- [Bve](https://bvets.net/)
+    - BVE Trainsim Version 5.8.7554.391 or later
+    - BVE Trainsim Version 6.0.7554.619 or later
+- [AtsEX](https://github.com/automatic9045/AtsEX)
+    - [ver1.0-RC3 - v1.0.31118.2](https://github.com/automatic9045/AtsEX/releases/tag/v1.0.31118.2) or later
+
+
+## 開発環境
+**Todo: 開発環境を必要に応じて変更**
 - [AtsEX](https://github.com/automatic9045/AtsEX)
     - [ver1.0-RC3 - v1.0.31118.2](https://github.com/automatic9045/AtsEX/releases/tag/v1.0.31118.2)
 - Win10 22H2
     - Visual Studio 2022
         - Microsoft Visual Studio Community 2022 (64 ビット) - Current Version 17.5.3
 - [Bve](https://bvets.net/)
+    - BVE Trainsim Version 5.8.7554.391
     - BVE Trainsim Version 6.0.7554.619
 
 
 ## 依存環境
+**Todo: 依存環境を必要に応じて変更**
 - AtsEx.CoreExtensions (0.19.0)
     - AtsEx.PluginHost (>= 1.0.0-rc1)
         - Lib.Harmony (>= 2.2.2)
@@ -34,106 +216,3 @@
     - ObjectiveHarmonyPatch (>= 1.0.0)
         - Lib.Harmony (>= 2.2.2)
 
-
-## 使い方
-1. Use this template から新しくリポジトリを作成する
-1. githubリポジトリの詳細を設定する
-2. LICENSEの著作権表記を変更する
-1. 自分の作りたい機能に合わせて設定する
-1. コードを書く
-1. リリースする
-
-### 0. 下準備
-#### 0.1. テンプレートから新しくリポジトリを作成して設定する
-1. `Use this template`ボタンから新しいリポジトリの作成画面に入る
-    - `Create a new repository`で新しくリポジトリを作成する
-    - リポジトリの名前はお好みで
-    - Description にプラグインの概要とかを書いておくといい
-1. リポジトリの設定画面でDescriptionやTopicsを設定する
-1. LICENSEの著作権表記を変更する
-1. README.md を消した後 README_TEMPLATE.md を README.md にリネームしてtodoを埋める
-
-#### 0.2. ローカルにクローンする
-1. `< > Code`からURLをコピーする
-1. Visual Studio を開いて リポジトリのクローン からコピーしたURLでローカルにクローンする
-
-できないときとかは下のコマンドでできる
-```bash
-git clone https://github.com/USERNAME/REPONAME.git
-```
-
-#### 0.3. Visual Studio でビルドできる状態にする
-1. AtsExCsTemplate.csproj を開いてすべて保存から適当な場所にslnを生成する
-1. NuGetからAtsEx関連のライブラリを入れる（ビルドすれば勝手に入る）
-1. 開発するプラグインの種類に応じて要らないファイルを削除する
-    - MapPlugin/
-        - マッププラグイン用のプロジェクト
-    - VehiclePlugin/
-        - 車両プラグイン用のプロジェクト
-    - Extension/
-        - 拡張機能用のプロジェクト
-
-#### 0.4. プラグイン情報の設定
-**Properties/AssemblyInfo.cs**
-BveからAtsExのバージョン情報を見たときに表示される内容を設定できます
-AtsExのバージョン情報画面から見えるのはファイル名と下の3項目です
-
-- AssemblyTitle
-    - プラグインの名前
-- AssemblyDescription
-    - プラグインの説明
-- AssemblyVersion
-    - プラグインのバージョン
-
-### 1. コードを書く
-頑張ってゴリゴリ書きましょう
-
-### 2. ドキュメントを書く
-1. githubリポジトリの詳細を設定する
-1. LICENSEの著作権表記を変更する
-1. README.md を消した後 README_TEMPLATE.md を README.md にリネームしてtodoを埋める
-
-### 3. 公開する
-公開ができる状態になったらmainにpushしてtag打ってreleaseを作りましょう
-<!-- tagを打つとciが走って自動でreleaseが作られビルド生成物が添付されます -->
-
-
-## デバッグについて
-※この項目に書いてあることは環境によって差異があるかもしれないので適宜自分の環境に合わせて読み替えること
-### 1. 生成物がAtsExから読めるようにする
-そのままの状態でビルドしてもデバッグできないのでBveからAtsEx経由でビルドしたプラグインが読み込めるようにする必要があります  
-そのためには大きく次のA,Bで2通りのやり方があります  
-おすすめはBのシンボリックリンク経由です  
-シンボリックリンク経由だとpdbなどのごみがBve側のディレクトリに散らばったりしなくて嬉しいです  
-#### 1.A. 生成物の出力パスをいじる
-1. メニューバー > プロジェクト > (プロジェクト名)のプロパティ を選択しプロジェクトのプロパティ画面を開く
-1. サイドバー > ビルド を選択しビルドの設定画面を開く
-1. 出力セクションの出力パスをプラグインの出力先に設定する
-1. 試しにビルドしてみて出力されるか確認する
-#### 1.B.シンボリックリンクを張る
-1. 生成物がない場合はビルドしてダミーのdllを生成する
-1. 出力ディレクトリ(binの下)にある生成物へのシンボリックリンクをプラグインの配置場所に配置する
-    - winでシンボリックリンクを簡単に張るには[Link Shell Extension](https://www.gigafree.net/system/explorer/hardlinkshellextension.html)がおすすめ
-1. 試しにビルドしてみて更新されるか確認する
-### 2. Visual Studioでデバッグする
-#### 2.1. デバッグの設定をする
-1. メニューバー > デバッグ > (プロジェクト名)のデバッグプロパティ を選択しプロジェクトのデバッグプロパティ画面を開く
-1. 開始動作を"外部プログラムの開始"を選択しBveのパスを設定する
-1. 必要があればコマンドライン引数にシナリオファイルのパスを設定する
-    - ここでシナリオファイルのパスを設定したらそのシナリオが直接読み込まれる
-    - 何も指定しなければ普通にシナリオ選択画面が立ち上がる
-#### 2.2.実際にデバッグする
-1. 適当にブレークとかを張る
-1. デバッグを始める
-    - F5キー
-    - メニューバーのデバッグとテストの下あたりの開始ボタン（緑の三角形）
-1. 張ったブレークで止まるか見てみる
-
-
-## 備考・その他
-- C#は初めてなのでお作法がわかりません
-    - ミスとか良くないところがあったらissue立てるなりしてくれればできる範囲で対応します
-    - PR大歓迎！！！
-- 自分用に作ったので適当です、自分が欲しい機能をとりあえず入れてます
-- AtsExとAtsEXがどっちもあったのでここでは引用を除いてコードに準じてAtsExとしています
-    - AtsEXが正式な表記っぽい？
