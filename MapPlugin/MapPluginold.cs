@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO
-using System.IO.Pipes
+using System.IO;
+using System.IO.Pipes;
 using AtsEx.PluginHost.Plugins;
+using AtsEx.PluginHost.Native;
+using AtsEx.PluginHost.Handles;
 
 namespace AtsExCsTemplate.MapPlugin
 {
@@ -20,9 +22,37 @@ namespace AtsExCsTemplate.MapPlugin
         /// 初期化を実装する
         /// </summary>
         /// <param name="builder"></param>
-        private int havingtime = 30;
-        private int speed = locationManager.SpeedMeterPerSecond;
+        private int life = 30;
+        //持ち時間
+        private float speed = VehicleState.Speed;
         private int atc = 100;
+        private static readonly IPowerHandle power = HandleSet.Power;
+        private int powerNotch = power.PowerNotchCount;
+        //もしだめならこうする
+        //public int PowerNotch = VehicleSpec.PowerNotches;
+        public int BrakeNotch = HandleSet.Brake.ServiceBrakeNotchCount;
+
+        
+
+        public int PowerNotch { get => powerNotch; set => powerNotch = value; }
+
+        ifpublic float Speed { get => speed; set => speed = value; }
+
+        (life = 0)
+        {
+            PowerNotch = 0;
+            BrakeNotch = HandleSet.Brake.EmergencyBrakeNotch;
+            if(speed == 0)
+            {
+                ///シナリオを終了するかんじの処理（とnamedpipe)
+            }
+        }
+        if(atc < speed && PowerNotch !== 0 && BrakeNotch == 0)
+        {
+            life -=2;
+        }
+
+
 
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
@@ -40,42 +70,29 @@ namespace AtsExCsTemplate.MapPlugin
         public override TickResult Tick(TimeSpan elapsed)
         {
             return new MapPluginTickResult();
-            if(havingtime == 0)
-            {
-                int atsPowerNotch = 0;
-                int atsBrakeNotch = handleset.Brake.MaxServiceBrakeNotch;
-                if(speed == 0)
-                {
-                    ///シナリオを終了するかんじの処理（とnamedpipe)
-                }
-            }
-            if(atc < speed && !atsPowerNotch == 0 && atsBrakeNotch == 0)
-            {
-                havingtime -=2;
-            }
             
         }
-        private void BeaconPassed(BeaconPassedEventArgs atc)
+        void BeaconPassed(BeaconPassedEventArgs e)
         {
-            //atc.Type 地上子の種類
-            //atc.Optional 
-            //atc.Distance 対象までの距離
-            if(atc.Type == 25){
-                atc.Value = 75;
+            //e.Type 地上子の種類
+            //e.Optional 
+            //e.Distance 対象までの距離
+            if(e.Type == 25){
+                int atc = 75;
                 }
-            if(atc.Type == 23){
+            if(e.Type == 23){
                 int atc = 65;
                 }
-            if(atc.Type == 21){
+            if(e.Type == 21){
                 int atc = 55;
                 }
-            if(atc.Type == 19){
+            if(e.Type == 19){
                 int atc = 45;
                 }
-            if(atc.Type == 18){
+            if(e.Type == 18){
                 int atc = 40;
                 }
-            if(atc.Type == 10){
+            if(e.Type == 10){
                 int atc = 0;
                 }
         }
