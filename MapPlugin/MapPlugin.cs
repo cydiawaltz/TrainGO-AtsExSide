@@ -8,14 +8,21 @@ using AtsEx.PluginHost.Plugins;
 using BveTypes.ClassWrappers;
 using SlimDX.Direct3D9;
 
-namespace elementary
+namespace elementary//初級
 {
     /// プラグインの本体
     [PluginType(PluginType.MapPlugin)]
     internal class MapPluginMain : AssemblyPluginBase
     {
+        //減点秒数（級数により変更）
+        int overatc = 2;//atc超過（予告無視）
+        int overtime = 5;//時間超過
+        int teitsuu = 3;//定通ボーナス
+        
         private readonly BeaconPassedEventArgs beaconPassedEventArgs;//オブジェクト参照大作
         private readonly Station station;
+        //atc信号
+        int atc;
         //持ち時間
         public int life;
         //速度
@@ -24,14 +31,20 @@ namespace elementary
         int PowerNotch;
         //ブレーキハンドルの数値
         int BrakeNotch;
+        //共有メモリ//
         //残り距離
         MemoryMappedViewAccessor accessor;
         //マスコン
         MemoryMappedViewAccessor power;
         //ブレーキ
         MemoryMappedViewAccessor brake;
+        //持ち時間
+        MemoryMappedViewAccessor lifetime;
+        //定通
+        MemoryMappedViewAccessor teitsuupoint;
         //pipeserver
         NamedPipeServerStream pipeServer;
+        ///時刻//
         //現在時刻
         TimeSpan now;
         //到着時刻
@@ -60,15 +73,23 @@ namespace elementary
             BrakeNotch = Native.Handles.Brake.Notch;
             //初期持ち時間
             life = 30;
+            //共有メモリ//
             //次駅距離
-            MemoryMappedFile share_mem = MemoryMappedFile.CreateNew("SendToUnity", 1024);
-            accessor = share_mem.CreateViewAccessor();
+            MemoryMappedFile a = MemoryMappedFile.CreateNew("NeXTStation", 1024);
+            accessor = a.CreateViewAccessor();
             //力行
-            MemoryMappedFile sharemem = MemoryMappedFile.CreateNew("PowerNotch", 1024);
-            power = sharemem.CreateViewAccessor();
+            MemoryMappedFile b = MemoryMappedFile.CreateNew("PowerNotch", 1024);
+            power = b.CreateViewAccessor();
             //ブレーキ
-            MemoryMappedFile share = MemoryMappedFile.CreateNew("BrakeNotch", 1024);
-            brake = share.CreateViewAccessor();
+            MemoryMappedFile c = MemoryMappedFile.CreateNew("BrakeNotch", 1024);
+            brake = c.CreateViewAccessor();
+            //持ち時間（life)
+            MemoryMappedFile d = MemoryMappedFile.CreateNew("Life", 1024);
+            lifetime = d.CreateViewAccessor() ;
+            //定通
+            MemoryMappedFile e = MemoryMappedFile.CreateNew("Life", 1024);
+            teitsuupoint = e.CreateViewAccessor();
+            //共有メモリEnd//
             //namedPipeの宣言
             pipeServer = new NamedPipeServerStream("SendToUnity", PipeDirection.Out);
             //最初に時刻をUnityへ送るるる
@@ -87,6 +108,9 @@ namespace elementary
             milliDeperture = station.DepertureTimeMilliseconds;//ミリ秒の通過時刻
             //停車時刻・通過時刻を送信
             Pass = station.Pass;//停車・通過の判
+            //地上子をatc信号に代入
+            Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
+            
         }
 
         /// プラグインが解放されたときに呼ばれる
@@ -95,13 +119,14 @@ namespace elementary
         {
             Native.BeaconPassed -= BeaconPassed;
 
+
         }
 
         /// シナリオ読み込み中に毎フレーム呼び出される
         /// <param name="elapsed">前回フレームからの経過時間</param>
         public override TickResult Tick(TimeSpan elapsed)
-            //TimeSpan elapsed ,PluginBuilder builder, VehicleState vehicleState, VehicleSpec vehicleSpec, BeaconPassedEventArgs beaconPassedEventArgs, AtsEx.PluginHost.Handles.HandleSet handleSet, TimeSpan time, AtsEx.PluginHost.Input.KeyBase keyBase, Scenario scenario, TimeManager timeManager, Station station)
-        {
+        { 
+            //
             if (Pass == false)//次駅を停車するとき
             {
                 byte[] mesArrival = Encoding.UTF8.GetBytes(SendArrival);
@@ -114,34 +139,14 @@ namespace elementary
             }
 
             //ノッチ数に変更があったらUnityに送信
-            //bool Press = keyBase.IsPressed;//なんかエラー吐くのでこのようにしてみた
-            //if (Press == true)
-            //{
-            //    string power = PowerNotch.ToString();//なんかエラー吐くので分けた
-            //    string brake = BrakeNotch.ToString();
-            //    byte[] mesnotch = Encoding.UTF8.GetBytes("Notch" + power + brake);//P4B5なら45とでる予定　Unity側では10の時は..のように実装よろしく
-            //    pipeServer.Write(mesnotch, 0, mesnotch.Length);
-            //}
-            //旧処理(namedpipe)
-            power.Write(0, PowerNotch);
+            power.Write(0, PowerNotch);//フレーム毎に
             brake.Write(0, BrakeNotch);
-            //新処理（メモリ共有）
-
             //地上子をatc信号に代入
-            Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed); // 地上子を通過したらBeaconPassedを実行させる
-            
+            Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
             //ここから持ち時間の減点処理
             if (atc < speed && BrakeNotch == 0)
             {
-                life -= 2;//持ち時間の減点処理
-                string lifemes = "Life" + life.ToString();//持ち時間をstringに変換
-                byte[] mesByte = Encoding.UTF8.GetBytes(lifemes);//byteに変換
-                pipeServer.Write(mesByte, 0, mesByte.Length);//Unityへ送信
-            }
-            //前方予告無視減点（級によって変更）
-            if (atc < speed && BrakeNotch == 0)
-            {
-                life -= 2;//持ち時間の減点処理
+                life -= overatc;//持ち時間の減点処理
                 string lifemes = "Life" + life.ToString();//持ち時間をstringに変換
                 byte[] mesByte = Encoding.UTF8.GetBytes(lifemes);//byteに変換
                 pipeServer.Write(mesByte, 0, mesByte.Length);//Unityへ送信
@@ -151,7 +156,7 @@ namespace elementary
             {
                 if (milliarrival - millinow > 5000)//Final形式で５秒以上遅れたらまとめて減点
                 {
-                    life -= 5;//５点減点
+                    life -= overtime;//５点減点
                     string late = "late" + life.ToString();
                     byte[] meslate = Encoding.UTF8.GetBytes(late);
                 }
@@ -160,13 +165,13 @@ namespace elementary
             {
                 if (milliDeperture - millinow > 5000)
                 {
-                    life -= 5;//５点減点
+                    life -= overtime;//５点減点
                     string late = "late" + life.ToString();
                     byte[] meslate = Encoding.UTF8.GetBytes(late);
                 }
                 if (System.Math.Abs(milliarrival - millinow) < 1000)//絶対値処理（定通）
                 {
-                    life += 3;//３点ボーナス
+                    life += teitsuu;//３点ボーナス
                     string teituu = "Teituu" + life.ToString();
                     byte[] mesteituu = Encoding.UTF8.GetBytes(teituu);
                     pipeServer.Write(mesteituu, 0, mesteituu.Length);//Unityには持ち時間5の時「teituu5」と表示、teituuの部分
@@ -185,9 +190,10 @@ namespace elementary
                     byte[] end = Encoding.UTF8.GetBytes(EndGame);
                     pipeServer.Write(end, 0, end.Length);//Unityへ終了処理を送信
                     Thread.Sleep(1000);//１秒待ってから終了
+                    //終了する処理
                 }
             }
-
+           
 
             //以下ひたすらインデックスと対応させるただのデスゲーム
             //自列車位置
@@ -218,7 +224,7 @@ namespace elementary
             //double H01 = BveHacker.Scenario.Route.Stations[22].Location;//中目黒
             //double H00 = BveHacker.Scenario.Route.Stations[23].Location;//中目黒留置線（ここまで実装できるかは不明）
             int index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
-            double NextLocation =BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;//
+            double NextLocation =BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
             accessor.Write(0, NextLocation);//次駅までの距離を送信
             
             //実装したい機能
@@ -233,6 +239,7 @@ namespace elementary
 
             return new VehiclePluginTickResult();
         }
+        //Atc信号の判定
         public void BeaconPassed(BeaconPassedEventArgs e)
         {
             int atc = e.Type;
@@ -259,7 +266,7 @@ namespace elementary
                 atc = 65;
                 break;
             //ATC75
-            case 25:
+            case 25:    
                 atc = 75;
                 break;
             default://そうでないときはクソめんどいのでATC80
