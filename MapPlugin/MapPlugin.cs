@@ -24,7 +24,7 @@ namespace elementary//初級
         int saikasoku = 5;//駅構内再加速
         int HijouSeidouTeisya = 5;//非常制動停車
         int hijouseidou = 3;//非常制動
-        
+
         private readonly BeaconPassedEventArgs beaconPassedEventArgs;//オブジェクト参照大作
         private readonly Station station;
         //atc信号
@@ -107,7 +107,7 @@ namespace elementary//初級
             brake = c.CreateViewAccessor();
             //持ち時間（life)
             MemoryMappedFile d = MemoryMappedFile.CreateNew("Life", 1024);
-            lifetime = d.CreateViewAccessor() ;
+            lifetime = d.CreateViewAccessor();
             //定通
             MemoryMappedFile e = MemoryMappedFile.CreateNew("Teitsuu", 1024);
             teitsuupoint = e.CreateViewAccessor();//定通したときに1を追加する
@@ -129,6 +129,7 @@ namespace elementary//初級
             5=駅構内再加速
             6=非常制動停車
             7=非常制動
+            8=オーバーラン(オーバーしたm数はUnity側で出せ)
             値が変更されたときになにかしらのダイアログをUnityで出せ
             */
             //共有メモリEnd//
@@ -159,7 +160,7 @@ namespace elementary//初級
             //字駅の駅インデックス
             index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
             //次駅の定義
-            NextLocation =BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
+            NextLocation = BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
         }
 
         /// プラグインが解放されたときに呼ばれる
@@ -173,12 +174,10 @@ namespace elementary//初級
         /// シナリオ読み込み中に毎フレーム呼び出される
         /// <param name="elapsed">前回フレームからの経過時間</param>
         public override TickResult Tick(TimeSpan elapsed)
-        { 
+        {
             //時間を送る
             if (Pass == false)//次駅を停車するとき
             {
-                //byte[] mesArrival = Encoding.UTF8.GetBytes(SendArrival);
-                //pipeServer.Write(mesArrival, 0, mesArrival.Length);
                 char[] Sendarrival = SendArrival.ToCharArray();
                 pasttime.WriteArray(sizeof(int), Sendarrival, 0, Sendarrival.Length);
             }
@@ -196,7 +195,7 @@ namespace elementary//初級
             if (atc < speed && BrakeNotch == 0)
             {
                 life -= overatc;//持ち時間の減点処理
-                lifetime.Write(0,life);//共有メモリに持ち時間（life）の値を入力
+                lifetime.Write(0, life);//共有メモリに持ち時間（life）の値を入力
             }
             //遅れの減点
             if (Pass == false)//次駅停車
@@ -206,20 +205,20 @@ namespace elementary//初級
                     life -= overtime;//５点減点
                     //string late = "late" + life.ToString();
                     //byte[] meslate = Encoding.UTF8.GetBytes(late);
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,1);//延着
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 1);//延着
                 }
-                if(System.Math.Abs(milliarrival - millinow) < 1000 && System.Math.Abs(NextLocation)<1)//Great!停車(定着&停止位置1m以内)
+                if (System.Math.Abs(milliarrival - millinow) < 1000 && System.Math.Abs(NextLocation) < 1)//Great!停車(定着&停止位置1m以内)
                 {
-                    life +=grate;
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,3);//Great停車
+                    life += grate;
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 3);//Great停車
                 }
-                else if(System.Math.Abs(NextLocation)<1)
+                else if (System.Math.Abs(NextLocation) < 1)
                 {
-                    life +=good;
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,4);//Good停車
+                    life += good;
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 4);//Good停車
                 }
             }
             else//次駅通過
@@ -229,42 +228,53 @@ namespace elementary//初級
                     life -= overtime;//５点減点
                     //string late = "late" + life.ToString();
                     //byte[] meslate = Encoding.UTF8.GetBytes(late);
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,2);//延通
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 2);//延通
                 }
-                if (System.Math.Abs(milliarrival - millinow) < 1000 && NextLocation==0)//絶対値処理（定通）
+                if (System.Math.Abs(milliarrival - millinow) < 1000 && NextLocation == 0)//絶対値処理（定通）
                 {
                     life += teitsuu;//３点ボーナス
                     //string teituu = "Teituu" + life.ToString();
                     //byte[] mesteituu = Encoding.UTF8.GetBytes(teituu);
                     //pipeServer.Write(mesteituu, 0, mesteituu.Length);//Unityには持ち時間5の時「teituu5」と表示、teituuの部分
-                    lifetime.Write(0,life);
+                    lifetime.Write(0, life);
                     teitsuukaisuu = teitsuukaisuu++;//定通した回数に１を加算
-                    teitsuupoint.Write(0,teitsuukaisuu);
+                    teitsuupoint.Write(0, teitsuukaisuu);
                 }
             }
             //駅構内再加速と非常制動停車
-            if(Pass == false)
+            if (Pass == false)
             {
-                if(NextLocation<140 && PowerNotch == 0)//140m（ホーム）上での再加速
+                if (NextLocation < 140 && PowerNotch == 0)//140m（ホーム）上での再加速
                 {
-                    life -=saikasoku;
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,5);
+                    life -= saikasoku;
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 5);
                 }
-                if(BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
+                if (BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
                 {
-                    life -=HijouSeidouTeisya;
-                    lifetime.Write(0,life);
-                    GentenNaiyou.Write(0,6);
+                    life -= HijouSeidouTeisya;
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 6);
                 }
             }
             //非常制動
-            if(NextLocation>140 && BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
+            if (NextLocation > 140 && BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
             {
-                life -=hijouseidou;
+                life -= hijouseidou;
                 lifetime.Write(0, life);
                 GentenNaiyou.Write(0, 7);
+            }
+            //オーバーラン
+            if (NowLocation > GoukakuHani + NextLocation)
+            {
+                if (speed == 0)
+                {
+                    int overrun = Convert.ToInt32(NowLocation - NextLocation);
+                    life -= overrun;
+                    lifetime.Write(0, life);
+                    GentenNaiyou.Write(0, 8);
+                }
             }
 
             //持ち時間が無くなったときの処理
@@ -276,14 +286,15 @@ namespace elementary//初級
                 if (speed == 0)
                 {
                     Thread.Sleep(3000);//停止してから３秒待つ
-                    string EndGame = "end";
-                    byte[] end = Encoding.UTF8.GetBytes(EndGame);
-                    pipeServer.Write(end, 0, end.Length);//Unityへ終了処理を送信
+                    //string EndGame = "end";
+                    //byte[] end = Encoding.UTF8.GetBytes(EndGame);
+                    //pipeServer.Write(end, 0, end.Length);//~~Unityへ終了処理を送信~~
+                    //Unity側で終了しろ
                     Thread.Sleep(1000);//1秒待ってから終了
                     //終了する処理
                 }
             }
-           
+
 
             //以下ひたすらインデックスと対応させるただのデスゲーム
             //ここから過去の努力の遺物
@@ -312,7 +323,7 @@ namespace elementary//初級
             //double H01 = BveHacker.Scenario.Route.Stations[22].Location;//中目黒
             //double H00 = BveHacker.Scenario.Route.Stations[23].Location;//中目黒留置線（ここまで実装できるかは不明
             accessor.Write(0, NextLocation);//次駅までの距離を送信
-            
+
             //実装したい機能
             //現在時刻・到着時刻>>OK
             //持ち時間（遅れでFinal式）>>OK
@@ -329,37 +340,37 @@ namespace elementary//初級
         //Atc信号の判定
         public void BeaconPassed(BeaconPassedEventArgs e)
         {
-            switch(e.Type)
+            switch (e.Type)
             {
-            //ATC信号0
+                //ATC信号0
                 case 10:
-                atc = 0;
-                break;
-            //ATC信号40
-            case 18:
-                atc = 40;
-                break;
-            //ATC45
-            case 19:
-                atc = 45;
-                break;
-            //ATC55
-            case 21:
-                atc = 55;
-                break;
-            //ATC65
-            case 23:
-                atc = 65;
-                break;
-            //ATC75
-            case 25:    
-                atc = 75;
-                break;
-            default://そうでないときはクソめんどいのでATC80
-                atc = 80;
-                break;
+                    atc = 0;
+                    break;
+                //ATC信号40
+                case 18:
+                    atc = 40;
+                    break;
+                //ATC45
+                case 19:
+                    atc = 45;
+                    break;
+                //ATC55
+                case 21:
+                    atc = 55;
+                    break;
+                //ATC65
+                case 23:
+                    atc = 65;
+                    break;
+                //ATC75
+                case 25:
+                    atc = 75;
+                    break;
+                default://そうでないときはクソめんどいのでATC80
+                    atc = 80;
+                    break;
             }
         }
     }
-}    
+}
 
