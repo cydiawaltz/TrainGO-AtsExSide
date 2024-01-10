@@ -23,6 +23,7 @@ namespace elementary//初級
         int GoukakuHani = 4;//合格範囲(m)
         int saikasoku = 5;//駅構内再加速
         int HijouSeidouTeisya = 5;//非常制動停車
+        int hijouseidou = 3;//非常制動
         
         private readonly BeaconPassedEventArgs beaconPassedEventArgs;//オブジェクト参照大作
         private readonly Station station;
@@ -126,6 +127,8 @@ namespace elementary//初級
             3=Grate停車(加点)
             4=Good停車(加点)
             5=駅構内再加速
+            6=非常制動停車
+            7=非常制動
             値が変更されたときになにかしらのダイアログをUnityで出せ
             */
             //共有メモリEnd//
@@ -252,12 +255,16 @@ namespace elementary//初級
                 if(Brake = Native.Handles.Brake.EmergencyBrakeNotch)
                 {
                     life -=HijouSeidouTeisya;
+                    lifetime.Write(0,life);
+                    GentenNaiyou.Write(0,6);
                 }
             }
             //非常制動
             if(NextLocation>140 && Brake = Native.Handles.Brake.EmergencyBrakeNotch)
             {
-                life 
+                life -=hijouseidou;
+                lifetime.Write(0,life)
+                GentenNaiyou.Write(0,7)
             }
 
             //持ち時間が無くなったときの処理
