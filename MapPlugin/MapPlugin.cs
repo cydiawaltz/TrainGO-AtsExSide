@@ -38,7 +38,7 @@ namespace elementary//初級
         //ブレーキハンドルの数値
         int BrakeNotch;
         //現在地
-        double Location;
+        double NowLocation;
         //字駅の駅インデックス
         int index;
         //次駅までの距離
@@ -155,7 +155,7 @@ namespace elementary//初級
             //定通舌回数は最初は0
             teitsuukaisuu = 0;
             //自列車位置=自列車位置
-            Location = Native.VehicleState.Location;
+            NowLocation = Native.VehicleState.Location;
             //字駅の駅インデックス
             index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
             //次駅の定義
@@ -179,13 +179,13 @@ namespace elementary//初級
             {
                 //byte[] mesArrival = Encoding.UTF8.GetBytes(SendArrival);
                 //pipeServer.Write(mesArrival, 0, mesArrival.Length);
-                arritime.Write(0,arrival);
+                char[] Sendarrival = SendArrival.ToCharArray();
+                pasttime.WriteArray(sizeof(int), Sendarrival, 0, Sendarrival.Length);
             }
             else//通過時
             {
-                //byte[] mespast = Encoding.UTF8.GetBytes(sendPast);
-                //pipeServer.Write(mespast, 0, mespast.Length);
-                pasttime.Write(0,past);
+                char[] SendPast = sendPast.ToCharArray();
+                pasttime.WriteArray(sizeof(int), SendPast, 0, SendPast.Length);
             }
 
             //ノッチ数を共有メモリへカキコ
@@ -246,13 +246,13 @@ namespace elementary//初級
             //駅構内再加速と非常制動停車
             if(Pass == false)
             {
-                if(NextLocation<140 && !PowerNotch=0)//140m（ホーム）上での再加速
+                if(NextLocation<140 && PowerNotch == 0)//140m（ホーム）上での再加速
                 {
                     life -=saikasoku;
                     lifetime.Write(0,life);
                     GentenNaiyou.Write(0,5);
                 }
-                if(Brake = Native.Handles.Brake.EmergencyBrakeNotch)
+                if(BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
                 {
                     life -=HijouSeidouTeisya;
                     lifetime.Write(0,life);
@@ -260,11 +260,11 @@ namespace elementary//初級
                 }
             }
             //非常制動
-            if(NextLocation>140 && Brake = Native.Handles.Brake.EmergencyBrakeNotch)
+            if(NextLocation>140 && BrakeNotch == Native.Handles.Brake.EmergencyBrakeNotch)
             {
                 life -=hijouseidou;
-                lifetime.Write(0,life)
-                GentenNaiyou.Write(0,7)
+                lifetime.Write(0, life);
+                GentenNaiyou.Write(0, 7);
             }
 
             //持ち時間が無くなったときの処理
