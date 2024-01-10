@@ -31,6 +31,12 @@ namespace elementary//初級
         int PowerNotch;
         //ブレーキハンドルの数値
         int BrakeNotch;
+        //現在地
+        double Location;
+        //字駅の駅インデックス
+        int index;
+        //次駅までの距離
+        double NextLocation;
         //定通した回数
         int teitsuukaisuu;
         //共有メモリ//
@@ -135,6 +141,12 @@ namespace elementary//初級
             Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
             //定通舌回数は最初は0
             teitsuukaisuu = 0;
+            //自列車位置=自列車位置
+            Location = Native.VehicleState.Location;
+            //字駅の駅インデックス
+            index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
+            //次駅の定義
+            NextLocation =BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
             
         }
 
@@ -197,14 +209,14 @@ namespace elementary//初級
                     lifetime.Write(0,life);
                     
                 }
-                if (System.Math.Abs(milliarrival - millinow) < 1000)//絶対値処理（定通）
+                if (System.Math.Abs(milliarrival - millinow) < 1000 && NextLocation==0)//絶対値処理（定通）
                 {
                     life += teitsuu;//３点ボーナス
                     //string teituu = "Teituu" + life.ToString();
                     //byte[] mesteituu = Encoding.UTF8.GetBytes(teituu);
                     //pipeServer.Write(mesteituu, 0, mesteituu.Length);//Unityには持ち時間5の時「teituu5」と表示、teituuの部分
                     lifetime.Write(0,life);
-                    teitsuukaisuu = teitsuukaisuu++;
+                    teitsuukaisuu = teitsuukaisuu++;//定通した回数に１を加算
                     teitsuupoint.Write(0,)teitsuukaisuu;
                 }
             }
@@ -227,8 +239,6 @@ namespace elementary//初級
            
 
             //以下ひたすらインデックスと対応させるただのデスゲーム
-            //自列車位置
-            double Location = Native.VehicleState.Location;//ここを残り距離にしませう
             //ここから過去の努力の遺物
             //double H23 = BveHacker.Scenario.Route.Stations[0].Location;//北千住停留場
             //double H22 = BveHacker.Scenario.Route.Stations[1].Location;//北千住
@@ -253,9 +263,7 @@ namespace elementary//初級
             //double H03 = BveHacker.Scenario.Route.Stations[20].Location;//広尾
             //double H02 = BveHacker.Scenario.Route.Stations[21].Location;//恵比寿
             //double H01 = BveHacker.Scenario.Route.Stations[22].Location;//中目黒
-            //double H00 = BveHacker.Scenario.Route.Stations[23].Location;//中目黒留置線（ここまで実装できるかは不明）
-            int index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
-            double NextLocation =BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
+            //double H00 = BveHacker.Scenario.Route.Stations[23].Location;//中目黒留置線（ここまで実装できるかは不明
             accessor.Write(0, NextLocation);//次駅までの距離を送信
             
             //実装したい機能
