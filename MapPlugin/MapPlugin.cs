@@ -31,6 +31,8 @@ namespace elementary//初級
         int PowerNotch;
         //ブレーキハンドルの数値
         int BrakeNotch;
+        //定通した回数
+        int teitsuukaisuu;
         //共有メモリ//
         //残り距離
         MemoryMappedViewAccessor accessor;
@@ -42,6 +44,13 @@ namespace elementary//初級
         MemoryMappedViewAccessor lifetime;
         //定通
         MemoryMappedViewAccessor teitsuupoint;
+        //通過時刻
+        MemoryMappedViewAccessor pasttime;
+        //到着時刻
+        MemoryMappedViewAccessor arritime;
+        //減点内容
+        MemoryMappedViewAccessor GentenNaiyou;
+
         //pipeserver
         NamedPipeServerStream pipeServer;
         ///時刻//
@@ -75,20 +84,34 @@ namespace elementary//初級
             life = 30;
             //共有メモリ//
             //次駅距離
-            MemoryMappedFile a = MemoryMappedFile.CreateNew("NeXTStation", 1024);
+            MemoryMappedFile a = MemoryMappedFile.CreateNew("NeXTStation", 4096);
             accessor = a.CreateViewAccessor();
             //力行
-            MemoryMappedFile b = MemoryMappedFile.CreateNew("PowerNotch", 1024);
+            MemoryMappedFile b = MemoryMappedFile.CreateNew("PowerNotch", 4096);
             power = b.CreateViewAccessor();
             //ブレーキ
-            MemoryMappedFile c = MemoryMappedFile.CreateNew("BrakeNotch", 1024);
+            MemoryMappedFile c = MemoryMappedFile.CreateNew("BrakeNotch", 4096);
             brake = c.CreateViewAccessor();
             //持ち時間（life)
             MemoryMappedFile d = MemoryMappedFile.CreateNew("Life", 1024);
             lifetime = d.CreateViewAccessor() ;
             //定通
-            MemoryMappedFile e = MemoryMappedFile.CreateNew("Life", 1024);
-            teitsuupoint = e.CreateViewAccessor();
+            MemoryMappedFile e = MemoryMappedFile.CreateNew("Teitsuu", 1024);
+            teitsuupoint = e.CreateViewAccessor();//定通したときに1を追加する
+            //通過時刻
+            MemoryMappedFile f = MemoryMappedFile.CreateNew("Past", 1024);
+            pasttime = f.CreateViewAccessor();
+            //到着時刻
+            MemoryMappedFile g = MemoryMappedFile.CreateNew("Teitsuu", 1024);
+            arritime = g.CreateViewAccessor();
+            //減点内容
+            MemoryMappedFile h = MemoryMappedFile.CreateNew("Teitsuu", 1024);
+            GentenNaiyou = h.CreateViewAccessor();
+            /*減点内容のIndex
+            0=減点なし
+            1=遅れ
+            値が変更されたときになにかしらのダイアログをUnityで出せ
+            */
             //共有メモリEnd//
             //namedPipeの宣言
             pipeServer = new NamedPipeServerStream("SendToUnity", PipeDirection.Out);
@@ -110,6 +133,8 @@ namespace elementary//初級
             Pass = station.Pass;//停車・通過の判
             //地上子をatc信号に代入
             Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
+            //定通舌回数は最初は0
+            teitsuukaisuu = 0;
             
         }
 
@@ -117,8 +142,7 @@ namespace elementary//初級
         /// 後処理を実装する
         public override void Dispose()
         {
-            Native.BeaconPassed -= BeaconPassed;
-
+            Native.BeaconPassed -= BeaconPassed;//地上子の通過イベント購読を解除
 
         }
 
@@ -126,30 +150,30 @@ namespace elementary//初級
         /// <param name="elapsed">前回フレームからの経過時間</param>
         public override TickResult Tick(TimeSpan elapsed)
         { 
-            //
+            //時間を送る
             if (Pass == false)//次駅を停車するとき
             {
-                byte[] mesArrival = Encoding.UTF8.GetBytes(SendArrival);
-                pipeServer.Write(mesArrival, 0, mesArrival.Length);
+                //byte[] mesArrival = Encoding.UTF8.GetBytes(SendArrival);
+                //pipeServer.Write(mesArrival, 0, mesArrival.Length);
+                arritime.Write(0,arrival);
             }
             else//通過時
             {
-                byte[] mespast = Encoding.UTF8.GetBytes(sendPast);
-                pipeServer.Write(mespast, 0, mespast.Length);
+                //byte[] mespast = Encoding.UTF8.GetBytes(sendPast);
+                //pipeServer.Write(mespast, 0, mespast.Length);
+                pasttime.Write(0,past);
             }
 
-            //ノッチ数に変更があったらUnityに送信
+            //ノッチ数を共有メモリへカキコ
             power.Write(0, PowerNotch);//フレーム毎に
             brake.Write(0, BrakeNotch);
-            //地上子をatc信号に代入
-            Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
+
             //ここから持ち時間の減点処理
             if (atc < speed && BrakeNotch == 0)
             {
                 life -= overatc;//持ち時間の減点処理
-                string lifemes = "Life" + life.ToString();//持ち時間をstringに変換
-                byte[] mesByte = Encoding.UTF8.GetBytes(lifemes);//byteに変換
-                pipeServer.Write(mesByte, 0, mesByte.Length);//Unityへ送信
+                lifetime.Write(0,life);//共有メモリに持ち時間（life）の値を入力
+
             }
             //遅れの減点
             if (Pass == false)//次駅停車
@@ -157,8 +181,10 @@ namespace elementary//初級
                 if (milliarrival - millinow > 5000)//Final形式で５秒以上遅れたらまとめて減点
                 {
                     life -= overtime;//５点減点
-                    string late = "late" + life.ToString();
-                    byte[] meslate = Encoding.UTF8.GetBytes(late);
+                    //string late = "late" + life.ToString();
+                    //byte[] meslate = Encoding.UTF8.GetBytes(late);
+                    lifetime.Write(0,life);
+                    GentenNaiyou.Write(0,1);
                 }
             }
             else//次駅通過
@@ -166,15 +192,20 @@ namespace elementary//初級
                 if (milliDeperture - millinow > 5000)
                 {
                     life -= overtime;//５点減点
-                    string late = "late" + life.ToString();
-                    byte[] meslate = Encoding.UTF8.GetBytes(late);
+                    //string late = "late" + life.ToString();
+                    //byte[] meslate = Encoding.UTF8.GetBytes(late);
+                    lifetime.Write(0,life);
+                    
                 }
                 if (System.Math.Abs(milliarrival - millinow) < 1000)//絶対値処理（定通）
                 {
                     life += teitsuu;//３点ボーナス
-                    string teituu = "Teituu" + life.ToString();
-                    byte[] mesteituu = Encoding.UTF8.GetBytes(teituu);
-                    pipeServer.Write(mesteituu, 0, mesteituu.Length);//Unityには持ち時間5の時「teituu5」と表示、teituuの部分
+                    //string teituu = "Teituu" + life.ToString();
+                    //byte[] mesteituu = Encoding.UTF8.GetBytes(teituu);
+                    //pipeServer.Write(mesteituu, 0, mesteituu.Length);//Unityには持ち時間5の時「teituu5」と表示、teituuの部分
+                    lifetime.Write(0,life);
+                    teitsuukaisuu = teitsuukaisuu++;
+                    teitsuupoint.Write(0,)teitsuukaisuu;
                 }
             }
             //持ち時間が無くなったときの処理
