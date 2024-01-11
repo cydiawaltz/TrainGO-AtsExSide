@@ -372,20 +372,22 @@ namespace elementary//初級
                     atc = 80;
                     break;
                 //定通ポイント
-                case 200;//低速(40km)
+                case 200://低速(40km)
                     if(Convert.ToInt32(speed)==40)
                     {
                         life+=teisokupoint;
                         lifetime.Write(0,life);
                         GentenNaiyou.Write(0,9);
                     }
-                case 201;//低速(60km)
+                    break;
+                case 201://低速(60km)
                     if(Convert.ToInt32(speed)==60)
                     {
                         life+=teisokupoint;
                         lifetime.Write(0,life);
                         GentenNaiyou.Write(0,9);
                     }
+                    break;
             }
         }
     }
