@@ -335,7 +335,7 @@ namespace elementary//初級
             //定通ポイント（独自地上子？）
             //定速ポイント（同）
             //ノッチ数変更通知 >>OK
-            //オーバーラン減点
+            //オーバーラン減点 >>OK
 
             return new VehiclePluginTickResult();
         }
@@ -388,6 +388,7 @@ namespace elementary//初級
                         GentenNaiyou.Write(0,9);
                     }
                     break;
+                
             }
         }
     }
