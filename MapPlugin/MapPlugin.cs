@@ -24,6 +24,7 @@ namespace elementary//初級
         int saikasoku = 5;//駅構内再加速
         int HijouSeidouTeisya = 5;//非常制動停車
         int hijouseidou = 3;//非常制動
+        int teisokupoint =1;//定速ポインㇳ/定通ポインと
 
         private readonly BeaconPassedEventArgs beaconPassedEventArgs;//オブジェクト参照大作
         private readonly Station station;
@@ -130,6 +131,7 @@ namespace elementary//初級
             6=非常制動停車
             7=非常制動
             8=オーバーラン(オーバーしたm数はUnity側で出せ)
+            9=定通/定速ポイント（加点）
             値が変更されたときになにかしらのダイアログをUnityで出せ
             */
             //共有メモリEnd//
@@ -366,9 +368,24 @@ namespace elementary//初級
                 case 25:
                     atc = 75;
                     break;
-                default://そうでないときはクソめんどいのでATC80
+                case 26://そうでないときはクソめんどいのでATC80
                     atc = 80;
                     break;
+                //定通ポイント
+                case 200;//低速(40km)
+                    if(Convert.ToInt32(speed)==40)
+                    {
+                        life+=teisokupoint;
+                        lifetime.Write(0,life);
+                        GentenNaiyou.Write(0,9);
+                    }
+                case 201;//低速(60km)
+                    if(Convert.ToInt32(speed)==60)
+                    {
+                        life+=teisokupoint;
+                        lifetime.Write(0,life);
+                        GentenNaiyou.Write(0,9);
+                    }
             }
         }
     }
