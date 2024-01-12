@@ -117,10 +117,10 @@ namespace elementary//初級
             MemoryMappedFile f = MemoryMappedFile.CreateNew("Past", 1024);
             pasttime = f.CreateViewAccessor();
             //到着時刻
-            MemoryMappedFile g = MemoryMappedFile.CreateNew("Teitsuu", 1024);
+            MemoryMappedFile g = MemoryMappedFile.CreateNew("Arrival", 1024);
             arritime = g.CreateViewAccessor();
             //減点内容
-            MemoryMappedFile h = MemoryMappedFile.CreateNew("Teitsuu", 1024);
+            MemoryMappedFile h = MemoryMappedFile.CreateNew("Gentennaiyou", 1024);
             GentenNaiyou = h.CreateViewAccessor();
             /*減点内容のIndex
             0=減点なし
