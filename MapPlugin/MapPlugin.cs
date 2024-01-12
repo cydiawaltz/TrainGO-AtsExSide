@@ -6,7 +6,6 @@ using System.Threading;
 using AtsEx.PluginHost.Native;
 using AtsEx.PluginHost.Plugins;
 using BveTypes.ClassWrappers;
-using SlimDX.Direct3D9;
 
 namespace elementary//初級
 {
@@ -25,15 +24,13 @@ namespace elementary//初級
         int HijouSeidouTeisya = 5;//非常制動停車
         int hijouseidou = 3;//非常制動
         int teisokupoint =1;//定速ポインㇳ/定通ポインと
-
-        private readonly BeaconPassedEventArgs beaconPassedEventArgs;//オブジェクト参照大作
         private readonly Station station;
         //atc信号
         int atc;
         //持ち時間
-        public int life;
+        int life;
         //速度
-        public float speed;
+        float speed;
         //力行ハンドルの数値
         int PowerNotch;
         //ブレーキハンドルの数値
@@ -59,12 +56,11 @@ namespace elementary//初級
         MemoryMappedViewAccessor teitsuupoint;
         //通過時刻
         MemoryMappedViewAccessor pasttime;
-        //到着時刻
-        MemoryMappedViewAccessor arritime;
+ 
         //減点内容
         MemoryMappedViewAccessor GentenNaiyou;
         //通過・停車の判定
-        MemoryMappedViewAccessor Pass;
+        MemoryMappedViewAccessor passhantei;
         //pipeserver
         NamedPipeServerStream pipeServer;
         ///時刻//
@@ -73,7 +69,6 @@ namespace elementary//初級
         //到着時刻
         TimeSpan arrival;
         //通貨時刻
-        TimeSpan past;
         //送る用
         string SendArrival;
         string sendPast;
@@ -82,7 +77,7 @@ namespace elementary//初級
         int milliarrival;
         int milliDeperture;
         //通過・停車の判定
-        bool Pass;
+        bool pass;
 
         /// プラグインが読み込まれた時に呼ばれる
         /// 初期化を実装する
@@ -118,7 +113,7 @@ namespace elementary//初級
             pasttime = f.CreateViewAccessor();
             //到着時刻
             MemoryMappedFile g = MemoryMappedFile.CreateNew("Arrival", 1024);
-            arritime = g.CreateViewAccessor();
+            MemoryMappedViewAccessor arritime = g.CreateViewAccessor();
             //減点内容
             MemoryMappedFile h = MemoryMappedFile.CreateNew("Gentennaiyou", 1024);
             GentenNaiyou = h.CreateViewAccessor();
@@ -152,7 +147,7 @@ namespace elementary//初級
             pipeServer.Write(mesnow, 0, mesnow.Length);
             //次駅到着時刻をUnityへ送る
             arrival = station.ArrivalTime;//停車時に呼び出す
-            past = station.DepertureTime;//通過時に呼び出す
+            TimeSpan past = station.DepertureTime;//通過時に呼び出す
             SendArrival = arrival.ToString();//string停車
             sendPast = arrival.ToString();//string通過
             //内部演算用にミリ秒でもカウント
@@ -160,7 +155,6 @@ namespace elementary//初級
             milliarrival = station.ArrivalTimeMilliseconds;//ミリ秒の到着時刻
             milliDeperture = station.DepertureTimeMilliseconds;//ミリ秒の通過時刻
             //停車時刻・通過時刻を送信
-            Pass = station.Pass;//停車・通過の判
             //地上子をatc信号に代入
             Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
             //定通舌回数は最初は0
@@ -187,7 +181,7 @@ namespace elementary//初級
         public override TickResult Tick(TimeSpan elapsed)
         {
             //時間を送る
-            if (Pass == false)//次駅を停車するとき
+            if (pass == false)//次駅を停車するとき
             {
                 char[] Sendarrival = SendArrival.ToCharArray();
                 pasttime.WriteArray(sizeof(int), Sendarrival, 0, Sendarrival.Length);
@@ -211,7 +205,7 @@ namespace elementary//初級
                 lifetime.Write(0, life);//共有メモリに持ち時間（life）の値を入力
             }
             //遅れの減点
-            if (Pass == false)//次駅停車
+            if (pass == false)//次駅停車
             {
                 if (milliarrival - millinow > 5000)//Final形式で５秒以上遅れたらまとめて減点
                 {
@@ -244,7 +238,7 @@ namespace elementary//初級
                     lifetime.Write(0, life);
                     GentenNaiyou.Write(0, 2);//延通
                 }
-                if (System.Math.Abs(milliarrival - millinow) < 1000 && NextLocation == 0)//絶対値処理（定通）
+                if (Math.Abs(milliarrival - millinow) < 1000 && NextLocation == 0)//絶対値処理（定通）
                 {
                     life += teitsuu;//３点ボーナス
                     //string teituu = "Teituu" + life.ToString();
@@ -256,7 +250,7 @@ namespace elementary//初級
                 }
             }
             //駅構内再加速と非常制動停車
-            if (Pass == false)
+            if (pass == false)
             {
                 if (NextLocation < 140 && PowerNotch == 0)//140m（ホーム）上での再加速
                 {
