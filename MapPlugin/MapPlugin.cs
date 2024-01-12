@@ -63,7 +63,8 @@ namespace elementary//初級
         MemoryMappedViewAccessor arritime;
         //減点内容
         MemoryMappedViewAccessor GentenNaiyou;
-
+        //通過・停車の判定
+        MemoryMappedViewAccessor Pass;
         //pipeserver
         NamedPipeServerStream pipeServer;
         ///時刻//
@@ -134,6 +135,13 @@ namespace elementary//初級
             9=定通/定速ポイント（加点）
             値が変更されたときになにかしらのダイアログをUnityで出せ
             */
+            //通過・停止を判定
+            MemoryMappedFile i = MemoryMappedFile.CreateNew("Pass", 1024);
+            passhantei = i.CreateViewAccessor();
+            /*
+            0=通過
+            1=停車
+            */
             //共有メモリEnd//
             //namedPipeの宣言
             pipeServer = new NamedPipeServerStream("SendToUnity", PipeDirection.Out);
@@ -163,6 +171,7 @@ namespace elementary//初級
             index = BveHacker.Scenario.Route.Stations.CurrentIndex;//次駅の駅インデックス
             //次駅の定義
             NextLocation = BveHacker.Scenario.Route.Stations[index].Location - BveHacker.Scenario.LocationManager.Location;
+
         }
 
         /// プラグインが解放されたときに呼ばれる
@@ -182,11 +191,13 @@ namespace elementary//初級
             {
                 char[] Sendarrival = SendArrival.ToCharArray();
                 pasttime.WriteArray(sizeof(int), Sendarrival, 0, Sendarrival.Length);
+                passhantei.Write(0,0);
             }
             else//通過時
             {
                 char[] SendPast = sendPast.ToCharArray();
                 pasttime.WriteArray(sizeof(int), SendPast, 0, SendPast.Length);
+                passhantei.Write(0,1);
             }
 
             //ノッチ数を共有メモリへカキコ
