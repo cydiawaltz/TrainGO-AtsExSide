@@ -45,7 +45,10 @@ namespace syokyu//初級
         MemoryMappedViewAccessor arrivaltounity;
         //通過時刻
         int past;
-        MemoryMappedViewAccessor arrivaltounity;
+        MemoryMappedViewAccessor pasttounity;
+        //現在時刻
+        int now;
+        MemoryMappedViewAccessor nowtounity;
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
             //スピード
@@ -86,21 +89,49 @@ namespace syokyu//初級
             */
             //到着時刻
             arrival = station.ArrivalTimeMilliseconds;
-            MemoryMappedFile i = MemoryMappedFile.CreateNew("arrival", 4096);
-            arrivaltounity= i.CreateViewAccessor();
+            MemoryMappedFile i = MemoryMappedFile.CreateNew("arrival", 86400000);
+            arrivaltounity = i.CreateViewAccessor();
+            //通貨時刻
+            past = station.DepertureTimeMilliseconds;
+            MemoryMappedFile j = MemoryMappedFile.CreateNew("past", 86400000);
+            arrivaltounity= j.CreateViewAccessor();
+            //現在時刻
+            now = BveHacker.Scenario.TimeManager.TimeMilliseconds;
+            MemoryMappedFile k = MemoryMappedFile.CreateNew("now", 86400000);
+            arrivaltounity= k.CreateViewAccessor();
             //持ち時間を受
-            MemoryMappedFile lifetimefromunity = MemoryMappedFile.OpenExisting("life");
-            lifefromunity = lifetime.CreateViewAccessor();
+            MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
+            lifefromunity = l.CreateViewAccessor();
         }
-
-        /// プラグインが解放されたときに呼ばれる
-        /// 後処理を実装する
         public override void Dispose()
         {
+            Native.BeaconPassed -= BeaconPassed;
+            speedtounity.Dispose();
+            a.Dispose();
+            nowlocatounity.Dispose();
+            b.Dispose();
+            indextounity.Dispose();
+            c.Dispose();
+            nextstatounity.Dispose();
+            d.Dispose();
+            powertounity.Dispose();
+            e.Dispose();
+            braketounity.Dispose();
+            f.Dispose();
+            arrivaltounity.Dispose();
+            g.Dispose();
+            pasttounity.Dispose();
+            h.Dispose();
+            nowtounity.Dispose();
+            i.Dispose();
+            beacontounity.Dispose();
+            j.Dispose();
+            passornot.Dispose();
+            k.Dispose();
+            lifetimefromunity.Dispose();
+            l.Dispose();
+            
         }
-
-        /// シナリオ読み込み中に毎フレーム呼び出される
-        /// <param name="elapsed">前回フレームからの経過時間</param>
         public override TickResult Tick(TimeSpan elapsed)
         {
             speedtounity.Write(0,speed);//スピードをUnityへ常時送信する
@@ -109,19 +140,21 @@ namespace syokyu//初級
             nextstatounity.Write(0,NeXTLocation);//次駅位置
             powertounity.Write(0,Power);//力行ノッチ
             braketounity.Write(0,Brake);//ブレーキノッチ
-            if(pass = falese)
+            if(pass = false)
             {
                 arrivaltounity.Write(0,arrival);//到着時刻（ミリ秒）
                 passornot.Write(0,0);//停車
             }
-            else{
-                
-                passornot.Write(0,1);
+            else
+            {
+                pasttounity.Write(0,past);//通貨時刻（ミリ秒）
+                passornot.Write(0,1);//通過
             }
             life = lifefromunity.ReadInt32(0);//lifeのあたいを受信
+            nowtounity.Write(0,now);
             if(life == 0)
             {
-                brakeNotch = Native.Handles.Brake.EmergencyBrakeNotch;
+                Brake = Native.Handles.Brake.EmergencyBrakeNotch;
                 //Unity側では持ち時間が0になったら音を鳴らしたりする（本家参照）
                 if (speed == 0)
                 {
