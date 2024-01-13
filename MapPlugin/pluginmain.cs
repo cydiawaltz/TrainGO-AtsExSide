@@ -1,7 +1,5 @@
 using System;
 using System.IO.MemoryMappedFiles;
-using System.IO.Pipes;
-using System.Text;
 using System.Threading;
 using AtsEx.PluginHost.Native;
 using AtsEx.PluginHost.Plugins;
@@ -13,6 +11,7 @@ namespace syokyu//初級
     [PluginType(PluginType.MapPlugin)]
     internal class MapPluginMain : AssemblyPluginBase
     {
+        private Station Station = null;
         //時速をUnityへ送信
         public float speed;
         MemoryMappedViewAccessor speedtounity;
@@ -80,7 +79,7 @@ namespace syokyu//初級
             MemoryMappedFile g = MemoryMappedFile.CreateNew("Brake", 4096);
             braketounity= g.CreateViewAccessor();
             //通過到着の判定
-            pass = //判定する文章
+            pass = Station.Pass;
             MemoryMappedFile h = MemoryMappedFile.CreateNew("passornot", 4096);
             passornot= h.CreateViewAccessor();
             /*
@@ -88,17 +87,17 @@ namespace syokyu//初級
             1-通過
             */
             //到着時刻
-            arrival = station.ArrivalTimeMilliseconds;
+            arrival = Station.ArrivalTimeMilliseconds;
             MemoryMappedFile i = MemoryMappedFile.CreateNew("arrival", 86400000);
             arrivaltounity = i.CreateViewAccessor();
             //通貨時刻
-            past = station.DepertureTimeMilliseconds;
+            past = Station.DepartureTimeMilliseconds;
             MemoryMappedFile j = MemoryMappedFile.CreateNew("past", 86400000);
-            arrivaltounity= j.CreateViewAccessor();
+            pasttounity= j.CreateViewAccessor();
             //現在時刻
             now = BveHacker.Scenario.TimeManager.TimeMilliseconds;
             MemoryMappedFile k = MemoryMappedFile.CreateNew("now", 86400000);
-            arrivaltounity= k.CreateViewAccessor();
+            nowtounity= k.CreateViewAccessor();
             //持ち時間を受
             MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
             lifefromunity = l.CreateViewAccessor();
@@ -106,30 +105,18 @@ namespace syokyu//初級
         public override void Dispose()
         {
             Native.BeaconPassed -= BeaconPassed;
-            speedtounity.Dispose();
-            a.Dispose();
+            speedtounity.Dispose(); 
             nowlocatounity.Dispose();
-            b.Dispose();
             indextounity.Dispose();
-            c.Dispose();
             nextstatounity.Dispose();
-            d.Dispose();
             powertounity.Dispose();
-            e.Dispose();
             braketounity.Dispose();
-            f.Dispose();
             arrivaltounity.Dispose();
-            g.Dispose();
             pasttounity.Dispose();
-            h.Dispose();
             nowtounity.Dispose();
-            i.Dispose();
             beacontounity.Dispose();
-            j.Dispose();
             passornot.Dispose();
-            k.Dispose();
-            lifetimefromunity.Dispose();
-            l.Dispose();
+            lifefromunity.Dispose();
             
         }
         public override TickResult Tick(TimeSpan elapsed)
@@ -140,7 +127,7 @@ namespace syokyu//初級
             nextstatounity.Write(0,NeXTLocation);//次駅位置
             powertounity.Write(0,Power);//力行ノッチ
             braketounity.Write(0,Brake);//ブレーキノッチ
-            if(pass = false)
+            if(pass == false)
             {
                 arrivaltounity.Write(0,arrival);//到着時刻（ミリ秒）
                 passornot.Write(0,0);//停車
@@ -163,7 +150,7 @@ namespace syokyu//初級
                     //終了する処理を実装
                 }
             }
-            return new VehiclePluginTickResult();
+            return new MapPluginTickResult();
         }
         public void BeaconPassed(BeaconPassedEventArgs e)
         {

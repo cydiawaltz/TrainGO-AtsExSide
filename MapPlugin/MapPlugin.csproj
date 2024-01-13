@@ -53,25 +53,20 @@
       <HintPath>..\packages\Lib.Harmony.2.2.2\lib\net48\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AtsEx.CoreExtensions, Version=0.17.30127.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.CoreExtensions.0.19.0\lib\AtsEx.CoreExtensions.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="AtsEx.CoreExtensions, Version=1.0.31106.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.CoreExtensions.1.0.0-rc1\lib\AtsEx.CoreExtensions.dll</HintPath>
     </Reference>
-    <Reference Include="AtsEx.PluginHost, Version=0.19.30520.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.PluginHost.0.19.0\lib\AtsEx.PluginHost.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="AtsEx.PluginHost, Version=1.0.40101.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.PluginHost.1.0.0-rc5\lib\AtsEx.PluginHost.dll</HintPath>
     </Reference>
-    <Reference Include="BveTypes, Version=0.19.30520.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.PluginHost.0.19.0\lib\BveTypes.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="BveTypes, Version=1.0.40101.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.PluginHost.1.0.0-rc5\lib\BveTypes.dll</HintPath>
     </Reference>
-    <Reference Include="FastCaching, Version=0.17.30125.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.PluginHost.0.19.0\lib\FastCaching.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="FastCaching, Version=1.0.31118.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.PluginHost.1.0.0-rc5\lib\FastCaching.dll</HintPath>
     </Reference>
-    <Reference Include="FastMember, Version=0.17.21224.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.PluginHost.0.19.0\lib\FastMember.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="FastMember, Version=1.0.40101.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.PluginHost.1.0.0-rc5\lib\FastMember.dll</HintPath>
     </Reference>
     <Reference Include="ObjectiveHarmonyPatch, Version=1.0.30529.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ObjectiveHarmonyPatch.1.0.0\lib\ObjectiveHarmonyPatch.dll</HintPath>
@@ -89,9 +84,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-    <Reference Include="TypeWrapping, Version=0.17.30127.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\AtsEx.PluginHost.0.19.0\lib\TypeWrapping.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="TypeWrapping, Version=1.0.31223.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AtsEx.PluginHost.1.0.0-rc5\lib\TypeWrapping.dll</HintPath>
     </Reference>
     <Reference Include="UnembeddedResources, Version=1.0.30529.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UnembeddedResources.1.0.0\lib\UnembeddedResources.dll</HintPath>
@@ -99,7 +93,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MapPlugin.cs" />
+    <Compile Include="pluginmain.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
