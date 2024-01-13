@@ -11,7 +11,7 @@ namespace syokyu//初級
     [PluginType(PluginType.MapPlugin)]
     internal class MapPluginMain : AssemblyPluginBase
     {
-        private Station Station = null;
+        private Station Station;
         //時速をUnityへ送信
         public float speed;
         MemoryMappedViewAccessor speedtounity;
@@ -51,7 +51,6 @@ namespace syokyu//初級
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
             //スピード
-            speed = Native.VehicleState.Speed;
             MemoryMappedFile a = MemoryMappedFile.CreateNew("speed", 4096);
             speedtounity = a.CreateViewAccessor();
             //現在位置
