@@ -11,7 +11,7 @@ namespace syokyu//初級
     [PluginType(PluginType.MapPlugin)]
     internal class MapPluginMain : AssemblyPluginBase
     {
-        private Station Station;
+        Station station;
         //時速をUnityへ送信
         public float speed;
         MemoryMappedViewAccessor speedtounity;
@@ -50,11 +50,12 @@ namespace syokyu//初級
         MemoryMappedViewAccessor nowtounity;
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
+            Station station = new Station();
             //スピード
             MemoryMappedFile a = MemoryMappedFile.CreateNew("speed", 4096);
             speedtounity = a.CreateViewAccessor();
             //現在位置
-            NowLocation = Native.VehicleState.Speed;
+            NowLocation = Native.VehicleState.Location;
             MemoryMappedFile b = MemoryMappedFile.CreateNew("NowLocation", 4096);
             nowlocatounity = b.CreateViewAccessor();
             //index
@@ -77,8 +78,6 @@ namespace syokyu//初級
             Brake = Native.Handles.Brake.Notch;
             MemoryMappedFile g = MemoryMappedFile.CreateNew("Brake", 4096);
             braketounity= g.CreateViewAccessor();
-            //通過到着の判定
-            pass = Station.Pass;
             MemoryMappedFile h = MemoryMappedFile.CreateNew("passornot", 4096);
             passornot= h.CreateViewAccessor();
             /*
@@ -86,11 +85,9 @@ namespace syokyu//初級
             1-通過
             */
             //到着時刻
-            arrival = Station.ArrivalTimeMilliseconds;
             MemoryMappedFile i = MemoryMappedFile.CreateNew("arrival", 86400000);
             arrivaltounity = i.CreateViewAccessor();
             //通貨時刻
-            past = Station.DepartureTimeMilliseconds;
             MemoryMappedFile j = MemoryMappedFile.CreateNew("past", 86400000);
             pasttounity= j.CreateViewAccessor();
             //現在時刻
@@ -100,6 +97,7 @@ namespace syokyu//初級
             //持ち時間を受
             MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
             lifefromunity = l.CreateViewAccessor();
+            bool pass = station.Pass;
         }
         public override void Dispose()
         {
@@ -120,6 +118,9 @@ namespace syokyu//初級
         }
         public override TickResult Tick(TimeSpan elapsed)
         {
+            Station station;
+            arrival = BveHacker.Scenario.Route.Stations[index].ArrivalTimeMilliseconds;
+            past = station.DepartureTimeMilliseconds;
             speedtounity.Write(0,speed);//スピードをUnityへ常時送信する
             nowlocatounity.Write(0,NowLocation);//現在位置
             indextounity.Write(0,index);//次駅インデックス
