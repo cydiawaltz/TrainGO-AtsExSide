@@ -105,10 +105,9 @@ namespace syokyu//初級
                 past = station.DepartureTimeMilliseconds;
                 pass = station.Pass;
             }
-            bool pass = station.Pass;
             //警笛が鳴ったら
-            MemoryMappedFile j = MemoryMappedFile.CreateNew("Horn", 2);
-            Onhorntounity = j.CreateViewAccessor();
+            MemoryMappedFile z = MemoryMappedFile.CreateNew("Horn", 2);
+            Onhorntounity = z.CreateViewAccessor();
             //警笛が鳴るイベントが発生したらメソッドを実行
         }
         public override void Dispose()
