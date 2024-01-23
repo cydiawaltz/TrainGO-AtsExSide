@@ -99,7 +99,7 @@ namespace syokyu//初級
             lifefromunity = l.CreateViewAccessor();
             speed = Native.VehicleState.Speed;
             var station = BveHacker.Scenario.Route.Stations[index] as Station;
-            if (station == null)
+            if (station! == null)
             {
                 arrival = station.ArrivalTimeMilliseconds;
                 past = station.DepartureTimeMilliseconds;
