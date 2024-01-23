@@ -11,7 +11,6 @@ namespace syokyu//初級
     [PluginType(PluginType.MapPlugin)]
     internal class MapPluginMain : AssemblyPluginBase
     {
-        Station station;
         //時速をUnityへ送信
         public float speed;
         MemoryMappedViewAccessor speedtounity;
@@ -50,12 +49,12 @@ namespace syokyu//初級
         MemoryMappedViewAccessor nowtounity;
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
-            Station station = new Station();
+            var state = Native.VehicleState;
             //スピード
             MemoryMappedFile a = MemoryMappedFile.CreateNew("speed", 4096);
             speedtounity = a.CreateViewAccessor();
             //現在位置
-            NowLocation = Native.VehicleState.Location;
+            NowLocation = state.Location;
             MemoryMappedFile b = MemoryMappedFile.CreateNew("NowLocation", 4096);
             nowlocatounity = b.CreateViewAccessor();
             //index
@@ -97,7 +96,14 @@ namespace syokyu//初級
             //持ち時間を受
             MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
             lifefromunity = l.CreateViewAccessor();
-            bool pass = station.Pass;
+            speed = Native.VehicleState.Speed;
+            var station = BveHacker.Scenario.Route.Stations[index] as Station;
+            if (station == null)
+            {
+                arrival = station.ArrivalTimeMilliseconds;
+                past = station.DepartureTimeMilliseconds;
+                pass = station.Pass;
+            }
         }
         public override void Dispose()
         {
@@ -118,9 +124,8 @@ namespace syokyu//初級
         }
         public override TickResult Tick(TimeSpan elapsed)
         {
-            Station station;
-            arrival = BveHacker.Scenario.Route.Stations[index].ArrivalTimeMilliseconds;
-            past = station.DepartureTimeMilliseconds;
+            //arrival = BveHacker.Scenario.Route.Stations[index] as Station.ArrivalTimeMilliseconds;
+            //past = this.station.DepartureTimeMilliseconds;
             speedtounity.Write(0,speed);//スピードをUnityへ常時送信する
             nowlocatounity.Write(0,NowLocation);//現在位置
             indextounity.Write(0,index);//次駅インデックス
