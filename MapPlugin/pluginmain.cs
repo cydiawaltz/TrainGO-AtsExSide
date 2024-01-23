@@ -47,6 +47,7 @@ namespace syokyu//初級
         //現在時刻
         int now;
         MemoryMappedViewAccessor nowtounity;
+        MemoryMappedViewAccessor Onhorntounity;
         public MapPluginMain(PluginBuilder builder) : base(builder)
         {
             var state = Native.VehicleState;
@@ -104,6 +105,11 @@ namespace syokyu//初級
                 past = station.DepartureTimeMilliseconds;
                 pass = station.Pass;
             }
+            bool pass = station.Pass;
+            //警笛が鳴ったら
+            MemoryMappedFile j = MemoryMappedFile.CreateNew("Horn", 2);
+            Onhorntounity = j.CreateViewAccessor();
+            //警笛が鳴るイベントが発生したらメソッドを実行
         }
         public override void Dispose()
         {
@@ -132,6 +138,7 @@ namespace syokyu//初級
             nextstatounity.Write(0,NeXTLocation);//次駅位置
             powertounity.Write(0,Power);//力行ノッチ
             braketounity.Write(0,Brake);//ブレーキノッチ
+            //警笛が鳴ったら
             if(pass == false)
             {
                 arrivaltounity.Write(0,arrival);//到着時刻（ミリ秒）
@@ -161,6 +168,12 @@ namespace syokyu//初級
         {
             BeaconType =e.Type;
             beacontounity.Write(0,BeaconType);
+        }
+        public void OnHorn()
+        {
+            Onhorntounity.Write(0,1);//tyoeが１のとき鳴った判定
+            Thread.Sleep(1000);
+            Onhorntounity.Write(0,0);//戻す
         }
     }
 }
