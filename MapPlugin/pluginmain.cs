@@ -102,13 +102,6 @@ namespace syokyu//初級
             MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
             lifefromunity = l.CreateViewAccessor();
             //speed = Native.VehicleState.Speed;
-            var station = BveHacker.Scenario.Route.Stations[index] as Station;
-            if (station == null)
-            {
-                arrival = station.ArrivalTimeMilliseconds;
-                past = station.DepartureTimeMilliseconds;
-                pass = station.Pass;
-            }
             //警笛が鳴ったら
             MemoryMappedFile z = MemoryMappedFile.CreateNew("Horn", 2);
             Onhorntounity = z.CreateViewAccessor();
@@ -138,10 +131,17 @@ if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
             }
+            index = BveHacker.Scenario.Route.Stations.CurrentIndex;//Index
+            var station = BveHacker.Scenario.Route.Stations[index] as Station;
+            if (station == null)
+            {
+                arrival = station.ArrivalTimeMilliseconds;
+                past = station.DepartureTimeMilliseconds;
+                pass = station.Pass;
+            }
             //arrival = BveHacker.Scenario.Route.Stations[index] as Station.ArrivalTimeMilliseconds;
             //past = this.station.DepartureTimeMilliseconds;
             NowLocation = Native.VehicleState.Location;//現在位置を設定
-            index = BveHacker.Scenario.Route.Stations.CurrentIndex;//Index
             NeXTLocation = BveHacker.Scenario.Route.Stations[index].Location;//次駅位置
             Power = Native.Handles.Power.Notch;//PowerNotch
             Brake = Native.Handles.Brake.Notch;//BrakeNotch
