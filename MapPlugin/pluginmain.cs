@@ -63,11 +63,11 @@ namespace syokyu//初級
             MemoryMappedFile b = MemoryMappedFile.CreateNew("NowLocation", 4096);
             nowlocatounity = b.CreateViewAccessor();
             //index
-            index = BveHacker.Scenario.Route.Stations.CurrentIndex;
+            //index = BveHacker.Scenario.Route.Stations.CurrentIndex;
             MemoryMappedFile c = MemoryMappedFile.CreateNew("Index", 4096);
             indextounity = c.CreateViewAccessor();
             //次駅位置
-            NeXTLocation = BveHacker.Scenario.Route.Stations[index].Location;
+            //NeXTLocation = BveHacker.Scenario.Route.Stations[index].Location;
             MemoryMappedFile d = MemoryMappedFile.CreateNew("NextLocation", 4096);
             nextstatounity = d.CreateViewAccessor();
             //BeaconType
@@ -75,11 +75,11 @@ namespace syokyu//初級
             beacontounity= e.CreateViewAccessor();
             Native.BeaconPassed += new BeaconPassedEventHandler(BeaconPassed);
             //Power
-            Power = Native.Handles.Power.Notch;
+            //Power = Native.Handles.Power.Notch;
             MemoryMappedFile f = MemoryMappedFile.CreateNew("Power", 4096);
             powertounity = f.CreateViewAccessor();
             //Brake
-            Brake = Native.Handles.Brake.Notch;
+            //Brake = Native.Handles.Brake.Notch;
             MemoryMappedFile g = MemoryMappedFile.CreateNew("Brake", 4096);
             braketounity= g.CreateViewAccessor();
             MemoryMappedFile h = MemoryMappedFile.CreateNew("passornot", 4096);
@@ -95,13 +95,13 @@ namespace syokyu//初級
             MemoryMappedFile j = MemoryMappedFile.CreateNew("past", 86400000);
             pasttounity= j.CreateViewAccessor();
             //現在時刻
-            now = BveHacker.Scenario.TimeManager.TimeMilliseconds;
+            //now = BveHacker.Scenario.TimeManager.TimeMilliseconds;
             MemoryMappedFile k = MemoryMappedFile.CreateNew("now", 86400000);
             nowtounity= k.CreateViewAccessor();
             //持ち時間を受
             MemoryMappedFile l = MemoryMappedFile.OpenExisting("life");
             lifefromunity = l.CreateViewAccessor();
-            speed = Native.VehicleState.Speed;
+            //speed = Native.VehicleState.Speed;
             var station = BveHacker.Scenario.Route.Stations[index] as Station;
             if (station == null)
             {
@@ -141,6 +141,13 @@ if (!System.Diagnostics.Debugger.IsAttached)
             //arrival = BveHacker.Scenario.Route.Stations[index] as Station.ArrivalTimeMilliseconds;
             //past = this.station.DepartureTimeMilliseconds;
             NowLocation = Native.VehicleState.Location;//現在位置を設定
+            index = BveHacker.Scenario.Route.Stations.CurrentIndex;//Index
+            NeXTLocation = BveHacker.Scenario.Route.Stations[index].Location;//次駅位置
+            Power = Native.Handles.Power.Notch;//PowerNotch
+            Brake = Native.Handles.Brake.Notch;//BrakeNotch
+            now = BveHacker.Scenario.TimeManager.TimeMilliseconds;//Now
+            speed = Native.VehicleState.Speed;//speed
+            //accessor系
             speedtounity.Write(0,speed);//スピードをUnityへ常時送信する
             nowlocatounity.Write(0,NowLocation);//現在位置
             indextounity.Write(0,index);//次駅インデックス
