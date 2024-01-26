@@ -131,7 +131,7 @@ if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
             }
-            index = BveHacker.Scenario.Route.Stations.CurrentIndex;//Index
+            index = BveHacker.Scenario.Route.Stations.CurrentIndex + 1;//Index
             var station = BveHacker.Scenario.Route.Stations[index] as Station;
             if (station == null)
             {
