@@ -157,7 +157,7 @@ if (!System.Diagnostics.Debugger.IsAttached)
             //警笛が鳴ったら
             if(pass == false)
             {
-                arrivaltounity.Write(0,arrival);//到着時刻（ミリ秒）
+                arrivaltounity.Write(1,arrival);//到着時刻（ミリ秒）
                 passornot.Write(0,0);//停車
             }
             else
