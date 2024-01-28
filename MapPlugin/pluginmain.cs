@@ -82,7 +82,7 @@ namespace syokyu//初級
             //Brake = Native.Handles.Brake.Notch;
             MemoryMappedFile g = MemoryMappedFile.CreateNew("Brake", 4096);
             braketounity= g.CreateViewAccessor();
-            MemoryMappedFile h = MemoryMappedFile.CreateNew("passornot", 4096);
+            MemoryMappedFile h = MemoryMappedFile.CreateNew("passornot", 4);
             passornot= h.CreateViewAccessor();
             /*
             0=停車
@@ -148,25 +148,25 @@ if (!System.Diagnostics.Debugger.IsAttached)
             now = BveHacker.Scenario.TimeManager.TimeMilliseconds;//Now
             speed = Native.VehicleState.Speed;//speed
             //accessor系
-            speedtounity.Write(0,speed);//スピードをUnityへ常時送信する
-            nowlocatounity.Write(0,NowLocation);//現在位置
-            indextounity.Write(0,index);//次駅インデックス
-            nextstatounity.Write(0,NeXTLocation);//次駅位置
-            powertounity.Write(0,Power);//力行ノッチ
-            braketounity.Write(0,Brake);//ブレーキノッチ
+            speedtounity.Write(1,speed);//スピードをUnityへ常時送信する
+            nowlocatounity.Write(1,NowLocation);//現在位置
+            indextounity.Write(1,index);//次駅インデックス
+            nextstatounity.Write(1,NeXTLocation);//次駅位置
+            powertounity.Write(1,Power);//力行ノッチ
+            braketounity.Write(1,Brake);//ブレーキノッチ
             //警笛が鳴ったら
             if(pass == false)
             {
                 arrivaltounity.Write(1,arrival);//到着時刻（ミリ秒）
-                passornot.Write(0,0);//停車
+                passornot.Write(1,0);//停車
             }
             else
             {
-                pasttounity.Write(0,past);//通貨時刻（ミリ秒）
-                passornot.Write(0,1);//通過
+                pasttounity.Write(1,past);//通貨時刻（ミリ秒）
+                passornot.Write(1,1);//通過
             }
-            life = lifefromunity.ReadInt32(0);//lifeのあたいを受信
-            nowtounity.Write(0,now);
+            life = lifefromunity.ReadInt32(1);//lifeのあたいを受信
+            nowtounity.Write(1,now);
             if(life == 0)
             {
                 Brake = Native.Handles.Brake.EmergencyBrakeNotch;
@@ -183,13 +183,13 @@ if (!System.Diagnostics.Debugger.IsAttached)
         public void BeaconPassed(BeaconPassedEventArgs e)
         {
             BeaconType =e.Type;
-            beacontounity.Write(0,BeaconType);
+            beacontounity.Write(1,BeaconType);
         }
         public void OnHorn()
         {
-            Onhorntounity.Write(0,1);//tyoeが１のとき鳴った判定
+            Onhorntounity.Write(1,1);//tyoeが１のとき鳴った判定
             Thread.Sleep(1000);
-            Onhorntounity.Write(0,0);//戻す
+            Onhorntounity.Write(1,0);//戻す
         }
     }
 }
