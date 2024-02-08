@@ -127,7 +127,7 @@ namespace syokyu//初級
         public override TickResult Tick(TimeSpan elapsed)
         {
             
-if (!System.Diagnostics.Debugger.IsAttached)
+            if (!System.Diagnostics.Debugger.IsAttached)
             {
                 System.Diagnostics.Debugger.Launch();
             }
